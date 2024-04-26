@@ -65,7 +65,7 @@ function padStart(number) {
  * @param {Date} startDate
  * @return {Range}
  */
-function getDateRange(startDate) {
+export function getDateRange(startDate) {
   const startYear = startDate.getFullYear();
   const startMonth = padStart(startDate.getMonth() + 1);
   const startDay = padStart(startDate.getDate());
@@ -117,6 +117,44 @@ export async function bookDesk(cookie, deskId, date) {
   return response.json();
 }
 
+/**
+ * Book a Desk
+ * @param {string} cookie
+ * @param {string} deskId
+ * @param {string} userId
+ * @param {Date} date
+ * @returns {Promise<CreateDeskBooking>}
+ */
+export async function bookDeskForUser(cookie, deskId, userId, date) {
+  const range = getDateRange(date);
+  const payload = {
+    query:
+      "mutation CreateDeskBooking($deskId: String!, $userId: String!, $start: DateTimeInput!, $end: DateTimeInput!) {\n  bookingsvc_CreateBooking(\n    entityId: $deskId\n    start: $start\n    end: $end\n    entityType: DeskEntity\n    userId: $userId\n    attendeeEmailAddresses: []\n  ) {\n    booking {\n      id\n      bookedForUser {\n        ...MinimalUser\n      }\n    }\n  }\n}\n\nfragment MinimalUser on User {\n  Id\n  profile {\n    name\n    photo {\n      id\n      src\n      fileExtension\n      name\n    }\n    birthday {\n      year\n      month\n      day\n    }\n    jobTitle\n    team {\n      teamName\n    }\n  }\n}",
+    variables: {
+      userId,
+      deskId,
+      start: {
+        ISOString: range.start.toISOString(),
+      },
+      end: {
+        ISOString: range.end.toISOString(),
+      },
+    },
+  };
+  const response = await fetch(
+    `https://go.kittoffices.com/go-graphql?t=${cookie}`,
+    {
+      method: "POST",
+      cache: "no-cache",
+      headers: {
+        "Content-Type": "application/json",
+        // "x-auth-token": cookie,
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+  return response.json();
+}
 /**
  * @param {Date} date
  * @returns {string}

@@ -119,13 +119,12 @@ export async function bookDesk(cookie, deskId, date) {
 
 /**
  * Book a Desk
- * @param {string} cookie
  * @param {string} deskId
  * @param {string} userId
  * @param {Date} date
  * @returns {Promise<CreateDeskBooking>}
  */
-export async function bookDeskForUser(cookie, deskId, userId, date) {
+export async function bookDeskForUser(deskId, userId, date) {
   const range = getDateRange(date);
   const payload = {
     query:
@@ -141,18 +140,14 @@ export async function bookDeskForUser(cookie, deskId, userId, date) {
       },
     },
   };
-  const response = await fetch(
-    `https://go.kittoffices.com/go-graphql?t=${cookie}`,
-    {
-      method: "POST",
-      cache: "no-cache",
-      headers: {
-        "Content-Type": "application/json",
-        // "x-auth-token": cookie,
-      },
-      body: JSON.stringify(payload),
-    }
-  );
+  const response = await fetch(`https://go.kittoffices.com/go-graphql?t=`, {
+    method: "POST",
+    cache: "no-cache",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
   return response.json();
 }
 /**
